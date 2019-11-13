@@ -2,13 +2,11 @@
 import json
 from pathlib import Path
 
-from kython.misc import import_file
 
 class Exporter:
     def __init__(self, *args, **kwargs) -> None:
-        # TODO use submodule??
-        hypothesis = import_file(Path(__file__).absolute().parent / 'Hypothesis' / 'hypothesis.py', 'hypothesis')
-        self.api = hypothesis.Hypothesis(*args, **kwargs, max_search_results=10000)
+        import Hypothesis.hypothesis as hypothesis
+        self.api = hypothesis.Hypothesis(*args, **kwargs, max_search_results=10000) # type: ignore[misc]
         # TODO not sure why max_search_results is set to 2000 in Hypothesis package; documentation says 9800 is the max for offset? Ask judell
         self.user = kwargs['username']
 
