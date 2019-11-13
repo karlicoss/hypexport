@@ -1,0 +1,3 @@
+[submodule "Hypothesis"]
+	path = Hypothesis
+	url = git@github.com:judell/Hypothesis.git
