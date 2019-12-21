@@ -39,7 +39,9 @@ class Model:
             try:
                 yield self._parse_highlight(i)
             except Exception as e:
-                yield e
+                err = RuntimeError(i)
+                err.__cause__ = e
+                yield err
 
     def _parse_highlight(self, i: Dict[str, Any]) -> Highlight:
         [tg] = i['target'] # hopefully it's always single element?
@@ -64,8 +66,13 @@ class Model:
                 content = s['exact']
                 break
 
-        page_title = ' '.join(i['document']['title'])
         page_link = i['uri']
+        title = i['document'].get('title')
+        if title is None:
+            # sometimes happens, e.t. if it's plaintext file
+            page_title = page_link
+        else:
+            page_title = ' '.join(title)
         hid = i['id']
         # TODO FIXME UTC?
         dts = i['created']
