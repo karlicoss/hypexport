@@ -14,7 +14,7 @@ Url = str
 
 # TODO FIXME make it raw and add properties
 class Highlight(NamedTuple):
-    dt: datetime
+    created: datetime
     title: str
     url: Url
     hid: str
@@ -40,8 +40,8 @@ class Page(NamedTuple):
         return the(h.title for h in self.highlights)
 
     @property
-    def dt(self) -> datetime: # TODO always using 'created'/'modified' makes more sense?
-        return min(h.dt for h in self.highlights)
+    def created(self) -> datetime:
+        return min(h.created for h in self.highlights)
 
 
 class DAL:
@@ -76,7 +76,7 @@ class DAL:
 
         key = lambda h: h.url
         for link, git in groupby(sorted(values, key=key), key=key):
-            group = list(sorted(git, key=lambda h: h.dt))
+            group = list(sorted(git, key=lambda h: h.created))
             yield Page(group)
 
         yield from errors
@@ -112,14 +112,14 @@ class DAL:
         else:
             page_title = ' '.join(title)
         hid = i['id']
-        # TODO FIXME UTC?
+        # TODO check that UTC?
         dts = i['created']
-        dt = datetime.strptime(dts[:-3] + dts[-2:], '%Y-%m-%dT%H:%M:%S.%f%z')
+        created = datetime.strptime(dts[:-3] + dts[-2:], '%Y-%m-%dT%H:%M:%S.%f%z')
         txt = i['text']
         annotation = None if len(txt.strip()) == 0 else txt
         context = i['links']['incontext']
         return Highlight(
-            dt=dt,
+            created=created,
             url=page_link,
             title=page_title,
             hid=hid,
