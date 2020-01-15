@@ -24,12 +24,7 @@ def get_json(**params):
 
 
 def main():
-    from export_helper import setup_parser
-    import argparse
-    # TODO pass docs to setup_parser?
-    # https://hypothes.is/account/developer
-    parser = argparse.ArgumentParser('Export/takeout for your personal Hypothesis data')
-    setup_parser(parser=parser, params=['username', 'token'])
+    parser = make_parser()
     args = parser.parse_args()
 
     params = args.params
@@ -38,6 +33,18 @@ def main():
     j = get_json(**params)
     js = json.dumps(j, ensure_ascii=False, indent=2, sort_keys=True)
     dumper(js)
+
+
+def make_parser():
+    from export_helper import setup_parser, Parser
+    parser = Parser('Export/takeout for your personal Hypothes.is data')
+    setup_parser(
+        parser=parser,
+        params=['username', 'token'],
+        extra_usage='''
+You can also import ~export.py~ this as a module and call ~get_json~ function directly to get raw JSON.
+''')
+    return parser
 
 
 if __name__ == '__main__':
