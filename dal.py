@@ -8,13 +8,10 @@ from datetime import datetime
 
 if __name__ == '__main__':
     # see dal_helper.setup for the explanation
-    import dal_helper
+    import dal_helper # type: ignore[import]
     dal_helper.fix_imports(globals())
 
-
-# TODO not sure what are we gonna do for CI linters; but it's really a minor issue.
-
-from . import dal_helper
+from . import dal_helper  # type: ignore[no-redef]
 from .dal_helper import PathIsh, Res, the, Json
 
 
