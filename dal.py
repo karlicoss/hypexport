@@ -6,8 +6,16 @@ import json
 from datetime import datetime
 
 
-import dal_helper
-from dal_helper import PathIsh, Res, the, Json
+if __name__ == '__main__':
+    # see dal_helper.setup for the explanation
+    import dal_helper
+    dal_helper.fix_imports(globals())
+
+
+# TODO not sure what are we gonna do for CI linters; but it's really a minor issue.
+
+from . import dal_helper
+from .dal_helper import PathIsh, Res, the, Json
 
 
 Url = str
