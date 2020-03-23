@@ -1,7 +1,7 @@
 Export your personal [[https://hypothes.is][Hypothes.is]] data: annotations and profile information.
 
 * Setting up
-1. Clone *recursively*: =git clone --recursive https://github.com/karlicoss/hypexport=. This is important so Hypothesis API are cloned as well.
+1. Clone *recursively*: =git clone --recursive https://github.com/karlicoss/hypexport=. This is important so Hypothesis API submodule is cloned as well.
 2. =pip3 install --user -r requirements.txt=
 3. Follow [[https://hypothes.is/account/developer][these]] instructions to set up the token
 
