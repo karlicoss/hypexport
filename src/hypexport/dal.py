@@ -6,18 +6,13 @@ import json
 from datetime import datetime
 
 
-if __name__ == '__main__':
-    # see dal_helper.setup for the explanation
-    import dal_helper # type: ignore[import]
-    dal_helper.fix_imports(globals())
-
-from . import dal_helper  # type: ignore[no-redef]
-from .dal_helper import PathIsh, Res, the, Json
+from .exporthelpers import dal_helper
+from .exporthelpers.dal_helper import PathIsh, Res, the, Json
 
 
 Url = str
 
-# TODO FIXME make it raw and add properties
+# TODO unstead, use raw json + add @property?
 class Highlight(NamedTuple):
     created: datetime
     title: str
@@ -29,7 +24,6 @@ class Highlight(NamedTuple):
     tags: Sequence[str]
 
 
-# TODO use cached properties..
 class Page(NamedTuple):
     """
     Represents annotated page along with the highlights
@@ -51,8 +45,8 @@ class Page(NamedTuple):
 
 class DAL:
     def __init__(self, sources: Sequence[PathIsh]) -> None:
-        # TODO FIXME take pathish everywhere?
-        self.sources = list(map(Path, sources))
+        pathify = lambda s: s if isinstance(s, Path) else Path(s)
+        self.sources = list(map(pathify, sources))
 
     def _iter_raw(self):
         # TODO FIXME merge all of them carefully
