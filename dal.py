@@ -5,7 +5,7 @@ A helper script to provide backwards compatibility for pre-PIP package structure
 
 from pathlib import Path
 src = Path(__file__).absolute().parent / 'src'
-NAME = list(src.glob('*/__init__.py'))[0].parent.name # package name (e.g. rexport/hypexport etc)
+NAME = min(src.glob('*/*.py')).parent.name # package name (e.g. rexport/hypexport etc)
 
 
 import warnings

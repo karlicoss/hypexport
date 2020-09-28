@@ -128,6 +128,25 @@ class DAL:
             tags=tuple(i['tags']),
         )
 
+
+# todo would be nice to use some fake data instead? this only gonna work under an ediable install
+def _testfile() -> Path:
+    testdata = Path(__file__).absolute().parent.parent.parent / 'testdata'
+    [jfile] = testdata.rglob('data/annotations.json')
+    return jfile
+
+
+def test() -> None:
+    dal = DAL([_testfile()])
+    # at least check it doesn't crash
+    for p in dal.pages():
+        assert not isinstance(p, Exception)
+        p.title
+        p.url
+        p.created
+        len(list(p.highlights))
+
+
 def demo(dal: DAL) -> None:
     # TODO split errors properly? move it to dal_helper?
     # highlights = list(w for w in dao.highlights() if not isinstance(w, Exception))
