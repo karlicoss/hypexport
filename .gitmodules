@@ -4,3 +4,6 @@
 [submodule "src/hypexport/exporthelpers"]
 	path = src/hypexport/exporthelpers
 	url = https://github.com/karlicoss/exporthelpers.git
+[submodule "testdata/netrights-dashboard-mockup"]
+	path = testdata/netrights-dashboard-mockup
+	url = https://github.com/taniki/netrights-dashboard-mockup.git
