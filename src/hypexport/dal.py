@@ -1,20 +1,19 @@
 #!/usr/bin/env python3
 from itertools import tee, groupby
-from typing import NamedTuple, Optional, Sequence, Iterator, List
+from typing import NamedTuple, Optional, Sequence, Iterator
 from pathlib import Path
-import json
 from datetime import datetime
 
 
 from .exporthelpers import dal_helper
-from .exporthelpers.dal_helper import PathIsh, Res, the, Json
+from .exporthelpers.dal_helper import PathIsh, Res, the, Json, pathify, datetime_aware, json_items
 
 
 Url = str
 
 # TODO unstead, use raw json + add @property?
 class Highlight(NamedTuple):
-    created: datetime
+    created: datetime_aware
     title: str
     url: Url
     hid: str
@@ -45,22 +44,24 @@ class Page(NamedTuple):
 
 class DAL:
     def __init__(self, sources: Sequence[PathIsh]) -> None:
-        pathify = lambda s: s if isinstance(s, Path) else Path(s)
         self.sources = list(map(pathify, sources))
 
     def _iter_raw(self):
-        # TODO FIXME merge all of them carefully
-        last = max(self.sources)
-        j = json.loads(last.read_text())
-        if isinstance(j, list):
-            # old export format
-            annotations = j
-        else:
-            annotations = j['annotations']
-        yield from annotations
+        for src in self.sources:
+            with src.open(mode='rb') as fo:
+                first = fo.read(1)
+                old_format = first == b'['
+            key = None if old_format else 'annotations'
+            annotations = json_items(src, key)
+            yield from annotations
 
     def highlights(self) -> Iterator[Res[Highlight]]:
+        emitted = set()
         for i in self._iter_raw():
+            hid = i['id']
+            if hid in emitted:
+                continue
+            emitted.add(hid)
             try:
                 yield self._parse_highlight(i)
             except Exception as e:
@@ -111,7 +112,6 @@ class DAL:
         else:
             page_title = ' '.join(title)
         hid = i['id']
-        # TODO check that UTC?
         dts = i['created']
         created = datetime.strptime(dts[:-3] + dts[-2:], '%Y-%m-%dT%H:%M:%S.%f%z')
         txt = i['text']
