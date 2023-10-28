@@ -52,7 +52,8 @@ class DAL:
                 first = fo.read(1)
                 old_format = first == b'['
             key = None if old_format else 'annotations'
-            annotations = json_items(src, key)
+            # annotations are in reverse chronological order, so make sense to reverse
+            annotations = reversed(list(json_items(src, key)))
             yield from annotations
 
     def highlights(self) -> Iterator[Res[Highlight]]:
