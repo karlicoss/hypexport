@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 import json
 
+from .exporthelpers.export_helper import setup_parser, Parser
+
 from .Hypothesis import hypothesis
+
 
 class Exporter:
     def __init__(self, *args, **kwargs) -> None:
-        self.api = hypothesis.Hypothesis(*args, **kwargs, max_search_results=10000) # type: ignore[misc]
+        kwargs['max_search_results'] = 10000
+        self.api = hypothesis.Hypothesis(*args, **kwargs)
         # TODO not sure why max_search_results is set to 2000 in Hypothesis package; documentation says 9800 is the max for offset? Ask judell
         self.user = kwargs['username']
 
@@ -13,7 +17,7 @@ class Exporter:
         profile = self.api.authenticated_api_query(self.api.api_url + '/profile')
         annotations = list(self.api.search_all({'user': self.user}))
         return {
-            'profile'    : profile,
+            'profile': profile,
             'annotations': annotations,
         }
 
@@ -35,14 +39,14 @@ def main() -> None:
 
 
 def make_parser():
-    from .exporthelpers.export_helper import setup_parser, Parser
     parser = Parser('Export/takeout for your personal [[https://hypothes.is][Hypothes.is]] data: annotations and profile information.')
     setup_parser(
         parser=parser,
         params=['username', 'token'],
         extra_usage='''
 You can also import ~hypexport.export~ as a module and call ~get_json~ function directly to get raw JSON.
-''')
+''',
+    )
     return parser
 
 
