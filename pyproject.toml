@@ -27,6 +27,7 @@ dependencies = [
 optional = [
     "orjson",
     "colorlog",
+    "ijson",  # faster iterative json processing
 ]
 testing = [
     "pytest",

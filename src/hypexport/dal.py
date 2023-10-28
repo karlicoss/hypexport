@@ -6,10 +6,23 @@ from datetime import datetime
 
 
 from .exporthelpers import dal_helper
-from .exporthelpers.dal_helper import PathIsh, Res, the, Json, pathify, datetime_aware, json_items
+from .exporthelpers.dal_helper import (
+    PathIsh,
+    Res,
+    the,
+    Json,
+    pathify,
+    datetime_aware,
+    json_items,
+)
+from .exporthelpers import logging_helper
+
+
+logger = logging_helper.logger(__name__)
 
 
 Url = str
+
 
 # TODO unstead, use raw json + add @property?
 class Highlight(NamedTuple):
@@ -18,8 +31,10 @@ class Highlight(NamedTuple):
     url: Url
     hid: str
     hyp_link: Url
-    highlight: Optional[str] # might be None if for instance we just marked page with tags. not sure if we want to handle it somehow separately
-    annotation: Optional[str] # user's comment
+    # highlight might be None if for instance we just marked page with tags without annotating
+    # not sure if we want to handle it somehow separately
+    highlight: Optional[str]
+    annotation: Optional[str]  # user's comment
     tags: Sequence[str]
 
 
@@ -27,6 +42,7 @@ class Page(NamedTuple):
     """
     Represents annotated page along with the highlights
     """
+
     highlights: Sequence[Highlight]
 
     @property
@@ -72,8 +88,10 @@ class DAL:
 
     def pages(self) -> Iterator[Res[Page]]:
         vit, eit = tee(self.highlights())
+        # fmt: off
         values = (r for r in vit if not isinstance(r, Exception))
         errors = (r for r in eit if     isinstance(r, Exception))
+        # fmt: on
 
         key = lambda h: h.url
         for link, git in groupby(sorted(values, key=key), key=key):
@@ -83,7 +101,7 @@ class DAL:
         yield from errors
 
     def _parse_highlight(self, i: Json) -> Highlight:
-        [tg] = i['target'] # hopefully it's always single element?
+        [tg] = i['target']  # hopefully it's always single element?
         selectors = tg.get('selector', None)
         if selectors is None:
             # TODO warn?...
@@ -154,8 +172,10 @@ def demo(dal: DAL) -> None:
 
     # TODO logger?
     vit, eit = tee(dal.pages())
+    # fmt: off
     values = (r for r in vit if not isinstance(r, Exception))
     errors = (r for r in eit if     isinstance(r, Exception))
+    # fmt: on
     for e in errors:
         print("ERROR! ", e)
 
@@ -164,6 +184,7 @@ def demo(dal: DAL) -> None:
 
     from collections import Counter
     from pprint import pprint
+
     common = Counter({(x.url, x.title): len(x.highlights) for x in pages}).most_common(10)
     print("10 most highlighed pages:")
     for (url, title), count in common:
