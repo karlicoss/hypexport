@@ -63,13 +63,17 @@ class DAL:
         self.sources = list(map(pathify, sources))
 
     def _iter_raw(self):
-        for src in self.sources:
-            with src.open(mode='rb') as fo:
+        paths = self.sources
+        total = len(paths)
+        width = len(str(total))
+        for idx, path in enumerate(paths):
+            logger.info(f'processing [{idx:>{width}}/{total:>{width}}] {path}')
+            with path.open(mode='rb') as fo:
                 first = fo.read(1)
                 old_format = first == b'['
             key = None if old_format else 'annotations'
             # annotations are in reverse chronological order, so make sense to reverse
-            annotations = reversed(list(json_items(src, key)))
+            annotations = sorted(iter(json_items(path, key)), key=lambda j: j.get('created', ''))
             yield from annotations
 
     def highlights(self) -> Iterator[Res[Highlight]]:
@@ -93,11 +97,14 @@ class DAL:
         errors = (r for r in eit if     isinstance(r, Exception))
         # fmt: on
 
-        key = lambda h: h.url
-        for link, git in groupby(sorted(values, key=key), key=key):
-            group = list(sorted(git, key=lambda h: h.created))
-            yield Page(group)
+        by_url = lambda h: h.url
+        by_created = lambda h: h.created
+        def it() -> Iterator[Page]:
+            for link, git in groupby(sorted(values, key=by_url), key=by_url):
+                group = list(sorted(git, key=by_created))
+                yield Page(group)
 
+        yield from sorted(it(), key=by_created)
         yield from errors
 
     def _parse_highlight(self, i: Json) -> Highlight:
