@@ -1,6 +1,6 @@
 [submodule "Hypothesis"]
 	path = src/hypexport/Hypothesis
-	url = https://github.com/judell/Hypothesis.git # ugh, github actions can't handle ssh?
+	url = https://github.com/karlicoss/Hypothesis.git # ugh, github actions can't handle ssh?
 [submodule "src/hypexport/exporthelpers"]
 	path = src/hypexport/exporthelpers
 	url = https://github.com/karlicoss/exporthelpers.git
