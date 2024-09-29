@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
-from itertools import tee, groupby
-from typing import NamedTuple, Optional, Sequence, Iterator
-from pathlib import Path
+from __future__ import annotations
+
 from datetime import datetime
+from itertools import groupby, tee
+from pathlib import Path
+from typing import Iterator, NamedTuple, Sequence
 
-
-from .exporthelpers import dal_helper
+from .exporthelpers import dal_helper, logging_helper
 from .exporthelpers.dal_helper import (
+    Json,
     PathIsh,
     Res,
-    the,
-    Json,
-    pathify,
     datetime_aware,
     json_items,
+    pathify,
+    the,
 )
-from .exporthelpers import logging_helper
-
 
 logger = logging_helper.logger(__name__)
 
@@ -33,8 +32,8 @@ class Highlight(NamedTuple):
     hyp_link: Url
     # highlight might be None if for instance we just marked page with tags without annotating
     # not sure if we want to handle it somehow separately
-    highlight: Optional[str]
-    annotation: Optional[str]  # user's comment
+    highlight: str | None
+    annotation: str | None  # user's comment
     tags: Sequence[str]
 
 
@@ -100,8 +99,8 @@ class DAL:
         by_url = lambda h: h.url
         by_created = lambda h: h.created
         def it() -> Iterator[Page]:
-            for link, git in groupby(sorted(values, key=by_url), key=by_url):
-                group = list(sorted(git, key=by_created))
+            for _link, git in groupby(sorted(values, key=by_url), key=by_url):
+                group = sorted(git, key=by_created)
                 yield Page(group)
 
         yield from sorted(it(), key=by_created)
@@ -124,7 +123,7 @@ class DAL:
         else:
             [highlight] = highlights
 
-        content: Optional[str] = None
+        content: str | None = None
         for s in selectors:
             if 'exact' in s:
                 content = s['exact']
@@ -166,10 +165,10 @@ def test() -> None:
     dal = DAL([_testfile()])
     # at least check it doesn't crash
     for p in dal.pages():
-        assert not isinstance(p, Exception)
-        p.title
-        p.url
-        p.created
+        assert not isinstance(p, Exception), p
+        p.title  # noqa: B018
+        p.url  # noqa: B018
+        p.created  # noqa: B018
         len(list(p.highlights))
 
 
@@ -190,7 +189,6 @@ def demo(dal: DAL) -> None:
     print(f"Parsed {len(pages)} pages")
 
     from collections import Counter
-    from pprint import pprint
 
     common = Counter({(x.url, x.title): len(x.highlights) for x in pages}).most_common(10)
     print("10 most highlighed pages:")
