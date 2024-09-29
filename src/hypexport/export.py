@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import json
 
-from .exporthelpers.export_helper import setup_parser, Parser
-
+from .exporthelpers.export_helper import Parser, setup_parser
 from .Hypothesis import hypothesis
 
 
