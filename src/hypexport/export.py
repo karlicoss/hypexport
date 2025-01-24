@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import json
 
 from .exporthelpers.export_helper import Parser, setup_parser
