@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
 from __future__ import annotations
 
+from collections.abc import Iterator, Sequence
 from datetime import datetime
 from itertools import groupby, tee
 from pathlib import Path
-from typing import Iterator, NamedTuple, Sequence
+from typing import NamedTuple
 
 from .exporthelpers import dal_helper, logging_helper
 from .exporthelpers.dal_helper import (

@@ -8,9 +8,16 @@ Export/takeout for your personal [[https://hypothes.is][Hypothes.is]] data: anno
 :end:
 
 * Setting up
-1. The easiest way is =pip3 install --user git+https://github.com/karlicoss/hypexport=.
+1. install with PIP
+   - =pip3 install --user git+https://github.com/karlicoss/hypexport=
 
-   Alternatively, use =git clone --recursive=, or =git pull && git submodules update --init=. After that, you can use =pip3 install --editable=.
+   - for export functionality: append =[export]=
+   - for optional extras for logging and faster json processing: append =[optional]=
+   - or any combination of the above, e.g. =[export,optional]=
+
+   - alternatively, use =git clone --recursive=, or =git pull && git submodules update --init=. After that, you can use =pip3 install --editable=.
+
+
 2. Follow [[https://hypothes.is/account/developer][these]] instructions to set up the token
 
 * Exporting
