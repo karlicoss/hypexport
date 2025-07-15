@@ -98,6 +98,7 @@ class DAL:
 
         by_url = lambda h: h.url
         by_created = lambda h: h.created
+
         def it() -> Iterator[Page]:
             for _link, git in groupby(sorted(values, key=by_url), key=by_url):
                 group = sorted(git, key=by_created)
@@ -123,10 +124,11 @@ class DAL:
         else:
             [highlight] = highlights
 
-        content: str | None = None
+        # TODO hmm unused?
+        _content: str | None = None
         for s in selectors:
             if 'exact' in s:
-                content = s['exact']
+                _content = s['exact']
                 break
 
         page_link = i['uri']
