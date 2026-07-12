@@ -1,4 +1,0 @@
-[src]
-exclude = [
-    "src/hypexport/Hypothesis/tests/test.py",
-]

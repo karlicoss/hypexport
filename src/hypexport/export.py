@@ -37,7 +37,9 @@ def main() -> None:
 
 
 def make_parser():
-    parser = Parser('Export/takeout for your personal [[https://hypothes.is][Hypothes.is]] data: annotations and profile information.')
+    parser = Parser(
+        'Export/takeout for your personal [[https://hypothes.is][Hypothes.is]] data: annotations and profile information.'
+    )
     setup_parser(
         parser=parser,
         params=['username', 'token'],
