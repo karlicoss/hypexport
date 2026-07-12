@@ -9,7 +9,6 @@ from typing import NamedTuple
 from .exporthelpers import dal_helper, logging_helper
 from .exporthelpers.dal_helper import (
     Json,
-    PathIsh,
     Res,
     datetime_aware,
     json_items,
@@ -17,7 +16,7 @@ from .exporthelpers.dal_helper import (
     the,
 )
 
-logger = logging_helper.logger(__name__)
+logger = logging_helper.make_logger(__name__)
 
 
 Url = str
@@ -58,7 +57,7 @@ class Page(NamedTuple):
 
 
 class DAL:
-    def __init__(self, sources: Sequence[PathIsh]) -> None:
+    def __init__(self, sources: Sequence[Path | str]) -> None:
         self.sources = list(map(pathify, sources))
 
     def _iter_raw(self):
