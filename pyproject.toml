@@ -4,12 +4,15 @@ dynamic = ["version"]  # version is managed by build backend
 name = "hypexport"
 # common/DAL dependencies
 dependencies = [
+    "hpikit",
+    "kloggy",
+    "more-itertools",
 ]
 requires-python = ">=3.12"
 
 ## these are only useful for pypi
 description = "Export and access your Hypothes.is data"  # shows on project page/in search
-readme      = {file = "README.org", content-type = "text/plain"}
+readme      = "README.md"
 license     = {file = "LICENSE"}
 authors     = [{name = "Dima Gerasimov (@karlicoss)", email = "karlicoss@gmail.com"}]
 maintainers = [{name = "Dima Gerasimov (@karlicoss)", email = "karlicoss@gmail.com"}]
@@ -26,9 +29,8 @@ export = [
     "requests",
 ]
 optional = [
-    "orjson",
-    "colorlog",
-    "ijson",  # faster iterative json processing
+    "hpikit[optional]", # faster JSON parsing and transparent compression
+    "kloggy[enlighten]",  # progress bars, shown when KLOGGY_PROGRESS is set, e.g. KLOGGY_PROGRESS=enlighten
 ]
 
 [dependency-groups]
@@ -39,7 +41,7 @@ testing = [
     "pytest",
     "ruff",
 
-    "hypexport[export]",
+    "hypexport[export,optional]",
 ]
 typecheck = [
     "mypy",
@@ -49,6 +51,11 @@ typecheck = [
     "hypexport[optional]",
 
     { include-group = "testing" },
+]
+quarto = [
+    "quarto-cli",
+
+    "hypexport[export,optional]",
 ]
 
 
@@ -361,6 +368,19 @@ commands = [
     [
         "{env_python}", "-m", "ty",
         "check",
+        { replace = "posargs", default = [], extend = true },
+    ],
+]
+
+
+[tool.tox.env.quarto]
+dependency_groups = ["quarto"]
+# Quarto relies on same-directory imports here, so unset the base environment value.
+set_env.PYTHONSAFEPATH = ""
+commands = [
+    [
+        "quarto", "render",
+        "README.qmd",
         { replace = "posargs", default = [], extend = true },
     ],
 ]

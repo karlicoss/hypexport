@@ -6,17 +6,15 @@ from itertools import groupby, tee
 from pathlib import Path
 from typing import NamedTuple
 
-from .exporthelpers import dal_helper, logging_helper
-from .exporthelpers.dal_helper import (
-    Json,
-    Res,
-    datetime_aware,
-    json_items,
-    pathify,
-    the,
-)
+import hpikit.cli.dal as cli
+from hpikit.datetime import AwareDateTime, aware
+from hpikit.json import Json, loads
+from hpikit.paths import as_paths
+from kloggy import get_logger
+from kloggy.progress import progress
+from more_itertools import one, unique_justseen
 
-logger = logging_helper.make_logger(__name__)
+logger = get_logger(__name__)
 
 
 Url = str
@@ -24,7 +22,7 @@ Url = str
 
 # TODO unstead, use raw json + add @property?
 class Highlight(NamedTuple):
-    created: datetime_aware
+    created: AwareDateTime
     title: str
     url: Url
     hid: str
@@ -45,11 +43,11 @@ class Page(NamedTuple):
 
     @property
     def url(self) -> str:
-        return the(h.url for h in self.highlights)
+        return one(unique_justseen(h.url for h in self.highlights))
 
     @property
     def title(self) -> str:
-        return the(h.title for h in self.highlights)
+        return one(unique_justseen(h.title for h in self.highlights))
 
     @property
     def created(self) -> datetime:
@@ -58,23 +56,18 @@ class Page(NamedTuple):
 
 class DAL:
     def __init__(self, sources: Sequence[Path | str]) -> None:
-        self.sources = list(map(pathify, sources))
+        self.sources = as_paths(sources)
 
     def _iter_raw(self):
-        paths = self.sources
-        total = len(paths)
-        width = len(str(total))
-        for idx, path in enumerate(paths):
-            logger.info(f'processing [{idx:>{width}}/{total:>{width}}] {path}')
-            with path.open(mode='rb') as fo:
-                first = fo.read(1)
-                old_format = first == b'['
-            key = None if old_format else 'annotations'
+        for path in progress(self.sources, logger=logger, unit='files'):
+            j = loads(path.read_bytes())
+            # old format is just the list of annotations
+            items = j if isinstance(j, list) else j['annotations']
             # annotations are in reverse chronological order, so make sense to reverse
-            annotations = sorted(iter(json_items(path, key)), key=lambda j: j.get('created', ''))
+            annotations = sorted(items, key=lambda a: a.get('created', ''))
             yield from annotations
 
-    def highlights(self) -> Iterator[Res[Highlight]]:
+    def highlights(self) -> Iterator[Highlight | Exception]:
         emitted = set()
         for i in self._iter_raw():
             hid = i['id']
@@ -88,7 +81,7 @@ class DAL:
                 err.__cause__ = e
                 yield err
 
-    def pages(self) -> Iterator[Res[Page]]:
+    def pages(self) -> Iterator[Page | Exception]:
         vit, eit = tee(self.highlights())
         # fmt: off
         values = (r for r in vit if not isinstance(r, Exception))
@@ -139,7 +132,7 @@ class DAL:
             page_title = ' '.join(title)
         hid = i['id']
         dts = i['created']
-        created = datetime.strptime(dts[:-3] + dts[-2:], '%Y-%m-%dT%H:%M:%S.%f%z')
+        created = aware(datetime.strptime(dts[:-3] + dts[-2:], '%Y-%m-%dT%H:%M:%S.%f%z'))
         txt = i['text']
         annotation = None if len(txt.strip()) == 0 else txt
         context = i['links']['incontext']
@@ -198,4 +191,4 @@ def demo(dal: DAL) -> None:
 
 
 if __name__ == '__main__':
-    dal_helper.main(DAL=DAL, demo=demo)
+    cli.main(DAL=DAL, demo=demo)
