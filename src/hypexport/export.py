@@ -1,6 +1,9 @@
+import argparse
 import json
 
-from .exporthelpers.export_helper import Parser, setup_parser
+import hpikit.cli.export as cli
+from hpikit.json import Json
+
 from .Hypothesis import hypothesis
 
 
@@ -11,7 +14,7 @@ class Exporter:
         # TODO not sure why max_search_results is set to 2000 in Hypothesis package; documentation says 9800 is the max for offset? Ask judell
         self.user = kwargs['username']
 
-    def export_json(self):
+    def export_json(self) -> Json:
         profile = self.api.authenticated_api_query(self.api.api_url + '/profile')
         annotations = list(self.api.search_all({'user': self.user}))
         return {
@@ -20,7 +23,7 @@ class Exporter:
         }
 
 
-def get_json(**params):
+def get_json(**params) -> Json:
     return Exporter(**params).export_json()
 
 
@@ -28,23 +31,19 @@ def main() -> None:
     parser = make_parser()
     args = parser.parse_args()
 
-    params = args.params
-    dumper = args.dumper
+    params = cli.get_params(parser, args)
 
     j = get_json(**params)
     js = json.dumps(j, ensure_ascii=False, indent=2, sort_keys=True)
-    dumper(js)
+    cli.dump(js, path=args.path)
 
 
-def make_parser():
-    parser = Parser(
-        'Export/takeout for your personal [[https://hypothes.is][Hypothes.is]] data: annotations and profile information.'
-    )
-    setup_parser(
-        parser=parser,
+def make_parser() -> argparse.ArgumentParser:
+    parser = cli.make_parser(
+        description='Export/takeout for your personal [Hypothes.is](https://hypothes.is) data: annotations and profile information.',
         params=['username', 'token'],
         extra_usage='''
-You can also import ~hypexport.export~ as a module and call ~get_json~ function directly to get raw JSON.
+You can also import `hypexport.export` as a module and call `get_json` function directly to get raw JSON.
 ''',
     )
     return parser

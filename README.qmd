@@ -1,0 +1,70 @@
+---
+format:
+  gfm:
+    # keep the line breaks from README.qmd, rather than rewrapping at 72 columns
+    wrap: preserve
+execute:
+  # Hide code by default; individual cells can override this when useful.
+  echo: false
+  # Importing the exporter emits a SyntaxWarning from the bundled Hypothesis client (`if lr is 0:` in hypothesis/hypothesis.py).
+  # Hide warnings so it doesn't end up in the README.
+  warning: false
+editor:
+  # this is for VS code
+  # note that it only works for 'preview' mode, not for markdown rendering
+  render-on-save: true
+---
+
+```{python}
+#| label: setup
+from importlib import import_module
+from pathlib import Path
+from tomllib import loads
+
+from hpikit.cli import format_epilog
+
+project = loads(Path("pyproject.toml").read_text())["project"]
+project_name = project["name"]
+
+export_parser = import_module(f'{project_name}.export').make_parser()
+```
+
+```{python}
+#| label: export-program
+#| output: asis
+print(export_parser.description)
+```
+
+<!-- Keep this separator: Quarto otherwise moves the generated preamble below the following heading. -->
+
+# Setting up
+
+1.  install with PIP
+    - `pip3 install --user git+https://github.com/karlicoss/hypexport`
+
+    - for export functionality: append `[export]`
+
+    - for optional extras for logging and faster json processing: append `[optional]`
+
+    - or any combination of the above, e.g. `[export,optional]`
+
+    - alternatively, clone the repository and run `pip3 install --editable .`.
+2.  Follow [these](https://hypothes.is/account/developer) instructions to set up the token
+
+# Exporting
+
+```{python}
+#| label: export-help
+#| output: asis
+print(format_epilog(export_parser, prog=f'python3 -m {project_name}.export'))
+```
+
+<!-- TODO FIXME api limitations 10000 annotations? -->
+
+# Updating README
+
+This README is generated from a 'literate' Quarto [README.qmd](README.qmd) via the following command:
+
+`tox -e quarto`
+
+If you want to correct something, feel free to simply update `README.md` though, I can reconcile the changes next time I regenerate it.
