@@ -233,8 +233,6 @@ lint.ignore = [
 #   ]
 extend-exclude = [
     "src/hypexport/Hypothesis",
-    "./dal.py",  # legacy helper
-    "./export.py",  # legacy helper
 ]
 
 [tool.ruff.format]
